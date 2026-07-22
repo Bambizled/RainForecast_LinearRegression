@@ -14,17 +14,17 @@ from src.features.feature_engineering import main as run_feature_engineering
 
 def main() -> None:
     print("=" * 80)
-    print("      RUNNING PREPROCESSING AND FEATURE SELECTION PIPELINE")
+    print("     running preprocessing and feature selection pipeline")
     print("=" * 80)
 
-    print("\n--- STEP 1: PREPROCESSING DATA ---")
+    print("\n--- Step 1: Preprocessing data ---")
     run_preprocessing()
 
-    print("\n--- STEP 2: FEATURE SELECTION ---")
+    print("\n--- Step 2: Feature selection ---")
     run_feature_engineering()
 
     print("\n" + "=" * 80)
-    print("      PIPELINE EXECUTION COMPLETED SUCCESSFULLY!")
+    print("     pipeline execution completed successfully!")
     print("=" * 80)
 
 
