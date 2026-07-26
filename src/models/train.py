@@ -40,6 +40,11 @@ def main():
     metrics_scratch = compute_regression_metrics(y_test, pred_scratch, feature_count=X_train.shape[1])
     metrics_sklearn = compute_regression_metrics(y_test, pred_sklearn, feature_count=X_train.shape[1])
 
+    pred_scratch_df = pd.DataFrame(pred_scratch, columns=['Predicted'])
+    pred_sklearn_df = pd.DataFrame(pred_sklearn, columns=['Predicted'])
+    pred_scratch_df.to_csv('outputs/models/predictions_scratch.csv', index=False)
+    pred_sklearn_df.to_csv('outputs/models/predictions_sklearn.csv', index=False)
+
     print(f"Intercept (Scratch): {model_scratch.intercept_}")
     print(f"Coefficients (Scratch): {model_scratch.coef_}")
     print("Metrics (Scratch):")
