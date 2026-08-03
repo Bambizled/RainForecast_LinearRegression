@@ -108,81 +108,43 @@ def split_data(
             X_features, y, test_size=test_size, random_state=42
         )
         print(f"Random split completed (Train size: {len(X_train)}, Test size: {len(X_test)}).")
-
     return X_train, X_test, y_train, y_test
 
-
-def standardize_features(
-    X_train: pd.DataFrame, 
-    X_test: pd.DataFrame
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def standardize_features( X_train: pd.DataFrame,  X_test: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
     scaler = StandardScaler()
-    
-    X_train_scaled = pd.DataFrame(
-        scaler.fit_transform(X_train), 
-        columns=X_train.columns, 
-        index=X_train.index
-    )
-    X_test_scaled = pd.DataFrame(
-        scaler.transform(X_test), 
-        columns=X_test.columns, 
-        index=X_test.index
-    )
+    X_train_scaled = pd.DataFrame( scaler.fit_transform(X_train), columns=X_train.columns, index=X_train.index)
+    X_test_scaled = pd.DataFrame(scaler.transform(X_test),  columns=X_test.columns,   index=X_test.index )
     print("Features standardized successfully using StandardScaler (fitted on X_train).")
     return X_train_scaled, X_test_scaled
-
-
-def save_processed_data(
-    X_train: pd.DataFrame, 
-    X_test: pd.DataFrame, 
-    y_train: pd.Series, 
-    y_test: pd.Series, 
-    output_dir: str
-) -> None:
+def save_processed_data(X_train: pd.DataFrame, X_test: pd.DataFrame, y_train: pd.Series, y_test: pd.Series,  output_dir: str) -> None:
     os.makedirs(output_dir, exist_ok=True)
-
     X_train.to_csv(os.path.join(output_dir, "X_train.csv"), index=False)
     X_test.to_csv(os.path.join(output_dir, "X_test.csv"), index=False)
-
     if isinstance(y_train, pd.Series):
         y_train.to_frame(name="Precipitation").to_csv(os.path.join(output_dir, "y_train.csv"), index=False)
     else:
         y_train.to_csv(os.path.join(output_dir, "y_train.csv"), index=False)
-
     if isinstance(y_test, pd.Series):
         y_test.to_frame(name="Precipitation").to_csv(os.path.join(output_dir, "y_test.csv"), index=False)
     else:
         y_test.to_csv(os.path.join(output_dir, "y_test.csv"), index=False)
-
     print(f"Processed CSV files saved successfully to {output_dir}/")
-
-
 def main() -> None:
     raw_data_path = os.path.join("data", "raw", "weather.csv")
     processed_dir = os.path.join("data", "processed")
-
     try:
         df = load_data(raw_data_path)
         df_cleaned = handle_missing_values(df)
         df_no_dup = remove_duplicates(df_cleaned)
-
         target_col = "Precipitation"
-        X_train, X_test, y_train, y_test = split_data(
-            df_no_dup, target_column=target_col, test_size=0.2, chronological=True
-        )
-
+        X_train, X_test, y_train, y_test = split_data( df_no_dup, target_column=target_col, test_size=0.2, chronological=True )
         num_cols = ["Specific Humidity", "Relative Humidity", "Temperature"]
         X_train_capped, X_test_capped = handle_outliers_iqr(X_train, X_test, num_cols)
-
         X_train_scaled, X_test_scaled = standardize_features(X_train_capped, X_test_capped)
-
         save_processed_data(X_train_scaled, X_test_scaled, y_train, y_test, processed_dir)
         print("Data Preprocessing pipeline completed successfully!")
-
     except Exception as e:
         print(f"Error executing preprocessing pipeline: {e}")
         raise
-
-
 if __name__ == "__main__":
     main()
