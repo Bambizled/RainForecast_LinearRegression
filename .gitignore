@@ -1,9 +1,15 @@
 __pycache__/
+.pytest_cache/
 .ipynb_checkpoints/
 
+*.py[cod]
 *.pyc
 *.pyo
 *.log
+
+# OS generated files
+Thumbs.db
+.DS_Store
 
 .venv/
 venv/
