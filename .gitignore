@@ -12,5 +12,10 @@ env/
 .vscode/
 .idea/
 
+data/raw/*.csv
+!data/raw/.gitkeep
+data/processed/*.csv
+!data/processed/.gitkeep
+
 outputs/models/*.pkl
 outputs/models/*.joblib

@@ -1,6 +1,5 @@
 from pathlib import Path
 import sys
-
 import numpy as np
 import pandas as pd
 
@@ -26,7 +25,7 @@ def test_fit_predict_on_linear_data():
 
 def test_fit_accepts_dataframe_target():
     X = np.array([[0.0], [1.0], [2.0], [3.0]])
-    y = pd.DataFrame({"rain": [1.0, 3.0, 5.0, 7.0]})
+    y = pd.DataFrame({"precipitation": [1.0, 3.0, 5.0, 7.0]})
 
     model = LinearRegressionFromScratch(learning_rate=0.01, n_iterations=20000)
     model.fit(X, y)

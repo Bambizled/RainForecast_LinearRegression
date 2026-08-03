@@ -1,7 +1,6 @@
-"""Script to generate and save EDA figures to outputs/figures/."""
-
 import os
-import sys
+import glob
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -12,53 +11,56 @@ import seaborn as sns
 sns.set_theme(style="whitegrid")
 plt.rcParams.update({'font.size': 11, 'axes.labelsize': 12, 'axes.titlesize': 14})
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+RAW_DATA_DIR = PROJECT_ROOT / "data" / "raw"
+FIGURES_DIR = PROJECT_ROOT / "outputs" / "figures"
+
+
+def load_sample_raw_data(data_dir: Path = RAW_DATA_DIR, sample_size: int = 100000) -> pd.DataFrame:
+    files = sorted(glob.glob(str(data_dir / "weather-vn-*.csv")))
+    if not files:
+        raise FileNotFoundError(f"No raw weather CSV files found in {data_dir}")
+    df = pd.read_csv(files[0])
+    if len(df) > sample_size:
+        df = df.sample(sample_size, random_state=42)
+    return df
+
 
 def main():
-    data_path = os.path.join("data", "raw", "weather.csv")
-    figures_dir = os.path.join("outputs", "figures")
-    os.makedirs(figures_dir, exist_ok=True)
+    os.makedirs(FIGURES_DIR, exist_ok=True)
+    df = load_sample_raw_data()
+    num_cols = ["temperature", "humidity", "pressure", "visibility", "cloudcover", "wind_speed", "precipitation"]
+    num_cols = [c for c in num_cols if c in df.columns]
 
-    df = pd.read_csv(data_path)
-    num_cols = ["Specific Humidity", "Relative Humidity", "Temperature", "Precipitation"]
-
-    # 1. Correlation Heatmap
     corr_matrix = df[num_cols].corr()
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".3f",
-                vmin=-1, vmax=1, linewidths=0.5)
+    plt.figure(figsize=(9, 7))
+    sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".3f", vmin=-1, vmax=1, linewidths=0.5)
     plt.title("Correlation Matrix of Weather Variables")
     plt.tight_layout()
-    plt.savefig(os.path.join(figures_dir, "correlation_heatmap.png"), dpi=150)
+    plt.savefig(FIGURES_DIR / "correlation_heatmap.png", dpi=150)
     plt.close()
-    print("Saved correlation_heatmap.png")
 
-    # 2. Histograms
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    fig, axes = plt.subplots(2, 3, figsize=(15, 9))
     axes = axes.flatten()
-    for idx, col in enumerate(num_cols):
-        sns.histplot(df[col], kde=True, ax=axes[idx], color="skyblue", bins=20)
+    for idx, col in enumerate(num_cols[:6]):
+        sns.histplot(df[col].dropna(), kde=True, ax=axes[idx], color="skyblue", bins=20)
         axes[idx].set_title(f"Distribution of {col}")
         axes[idx].set_xlabel(col)
         axes[idx].set_ylabel("Frequency")
     plt.suptitle("Feature Distributions", y=0.98, fontsize=16)
     plt.tight_layout()
-    plt.savefig(os.path.join(figures_dir, "histogram_features.png"), dpi=150)
+    plt.savefig(FIGURES_DIR / "histogram_features.png", dpi=150)
     plt.close()
-    print("Saved histogram_features.png")
 
-    # 3. Boxplots
-    fig, axes = plt.subplots(1, 4, figsize=(16, 6))
-    for idx, col in enumerate(num_cols):
-        sns.boxplot(y=df[col], ax=axes[idx], color="lightgreen", width=0.4)
+    fig, axes = plt.subplots(1, 6, figsize=(18, 5))
+    for idx, col in enumerate(num_cols[:6]):
+        sns.boxplot(y=df[col].dropna(), ax=axes[idx], color="lightgreen", width=0.4)
         axes[idx].set_title(col)
         axes[idx].set_ylabel("")
     plt.suptitle("Boxplots for Outlier Detection", y=0.98, fontsize=16)
     plt.tight_layout()
-    plt.savefig(os.path.join(figures_dir, "boxplot_features.png"), dpi=150)
+    plt.savefig(FIGURES_DIR / "boxplot_features.png", dpi=150)
     plt.close()
-    print("Saved boxplot_features.png")
-
-    print("All figures generated successfully!")
 
 
 if __name__ == "__main__":

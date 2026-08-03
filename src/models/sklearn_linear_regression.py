@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 
+
 class SklearnLinearRegression:
     def __init__(self):
         self.model = LinearRegression()
@@ -11,4 +12,3 @@ class SklearnLinearRegression:
 
     def predict(self, X):
         return self.model.predict(X)
-    

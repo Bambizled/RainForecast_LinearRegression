@@ -10,22 +10,24 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 
 from src.data.preprocessing import main as run_preprocessing
 from src.features.feature_engineering import main as run_feature_engineering
+from src.models.train import main as run_training
+from src.visualization.plots import main as run_visualization
 
 
 def main() -> None:
-    print("=" * 80)
-    print("     running preprocessing and feature selection pipeline")
-    print("=" * 80)
-
-    print("\n--- Step 1: Preprocessing data ---")
+    print("Running Preprocessing Pipeline...")
     run_preprocessing()
 
-    print("\n--- Step 2: Feature selection ---")
+    print("Running Feature Selection Pipeline...")
     run_feature_engineering()
 
-    print("\n" + "=" * 80)
-    print("     pipeline execution completed successfully!")
-    print("=" * 80)
+    print("Running Model Training and Evaluation...")
+    run_training()
+
+    print("Generating Figures and Visualizations...")
+    run_visualization()
+
+    print("Pipeline Execution Completed Successfully!")
 
 
 if __name__ == "__main__":

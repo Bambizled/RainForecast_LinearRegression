@@ -2,47 +2,53 @@
 
 ## 3.1 Nguồn dữ liệu
 
-- **Dataset**: Rainfall Timeseries Data
-- **Nguồn**: [Kaggle - poojag718/rainfall-timeseries-data](https://www.kaggle.com/datasets/poojag718/rainfall-timeseries-data)
-- **File**: `data/raw/weather.csv`
+- **Dataset**: Vietnam Weather Dataset
+- **Nguồn**: `data/raw/weather-vn-1.csv` ... `weather-vn-5.csv`
+- **File**: `data/raw/weather-vn-*.csv`
 
 ## 3.2 Mô tả Dataset
 
 | Thuộc tính | Giá trị |
 |---|---|
-| Số dòng (samples) | 252 |
-| Số cột (features) | 7 |
-| Thời gian | 2000 – 2020, theo tháng |
-| Khu vực | Mumbai, Ấn Độ |
+| Số dòng (samples) | 3,815,246 |
+| Số cột (features) | 20 |
+| Khu vực | Các tỉnh / thành phố tại Việt Nam |
 
 ### Các cột dữ liệu:
 
 | Cột | Kiểu dữ liệu | Mô tả |
 |---|---|---|
-| Year | int64 | Năm |
-| Month | int64 | Tháng |
-| Day | int64 | Ngày (luôn = 1, dữ liệu theo tháng) |
-| Specific Humidity | float64 | Độ ẩm đặc trưng (g/kg) |
-| Relative Humidity | float64 | Độ ẩm tương đối (%) |
-| Temperature | float64 | Nhiệt độ (°C) |
-| Precipitation | float64 | Lượng mưa (mm) – **Biến mục tiêu** |
+| time | string | Thời gian quan sát |
+| province | string | Tỉnh / Thành phố |
+| city | string | Quận / Huyện |
+| temperature | float64 | Nhiệt độ (°C) |
+| temp_min | float64 | Nhiệt độ tối thiểu (°C) |
+| temp_max | float64 | Nhiệt độ tối đa (°C) |
+| humidity | float64 | Độ ẩm (%) |
+| feels_like | float64 | Cảm giác nhiệt (°C) |
+| visibility | float64 | Tầm nhìn (km) |
+| precipitation | float64 | Lượng mưa (mm) – **Biến mục tiêu** |
+| cloudcover | float64 | Độ che phủ mây (%) |
+| wind_speed | float64 | Tốc độ gió (km/h) |
+| wind_gust | float64 | Gió giật (km/h) |
+| wind_direction | float64 | Hướng gió (độ) |
+| pressure | float64 | Áp suất khí quyển (hPa) |
+| is_day | int64 | Thời gian ban ngày (1/0) |
+| weather_code | int64 | Mã thời tiết |
+| weather_main | string | Nhóm thời tiết chính |
+| weather_description | string | Mô tả chi tiết thời tiết |
+| weather_icon | string | Biểu tượng thời tiết |
 
 ## 3.3 Các bước Tiền xử lý (Data Preprocessing)
 
 **File**: `src/data/preprocessing.py`
 
-1. **Load CSV**: Đọc file `data/raw/weather.csv` bằng `pandas.read_csv()`.
-2. **Missing Values**: Kiểm tra giá trị thiếu → Không phát hiện giá trị thiếu (0 missing). Nếu có, sử dụng linear interpolation + ffill/bfill.
-3. **Duplicate Removal**: Kiểm tra dòng trùng lặp → Không phát hiện dòng trùng (0 duplicates).
-4. **Outlier Detection (IQR)**: Áp dụng phương pháp IQR cho các cột số:
-   - `Specific Humidity`: 0 outliers
-   - `Relative Humidity`: 0 outliers
-   - `Temperature`: 0 outliers
-   - `Precipitation`: **16 outliers** → Capped (làm mịn) tại giới hạn IQR
-5. **Train/Test Split 80/20**: Chia dữ liệu theo thứ tự thời gian (chronological split):
-   - Train: 201 samples
-   - Test: 51 samples
-6. **StandardScaler**: Chuẩn hóa các features bằng `StandardScaler`, fit trên tập train để tránh data leakage.
+1. **Load CSV**: Đọc và hợp nhất các file `data/raw/weather-vn-*.csv` bằng `pandas.read_csv()`.
+2. **Missing Values**: Xử lý 12,103 giá trị thiếu ở cột `visibility` bằng nội suy tuyến tính (interpolation) kết hợp ffill/bfill.
+3. **Duplicate Removal**: Xóa 4,333 dòng dữ liệu trùng lặp.
+4. **Outlier Detection (IQR)**: Áp dụng clipping theo dải IQR cho các cột số: `temperature`, `humidity`, `pressure`, `visibility`, `cloudcover`, `wind_speed`.
+5. **Train/Test Split 80/20**: Chia dữ liệu theo thứ tự thời gian (chronological split).
+6. **StandardScaler**: Chuẩn hóa đặc trưng bằng `StandardScaler` fit trên tập train.
 7. **Lưu kết quả**:
    - `data/processed/X_train.csv`
    - `data/processed/X_test.csv`
@@ -53,25 +59,11 @@
 
 **File**: `src/features/feature_engineering.py`
 
-1. **Correlation Matrix**: Tính ma trận tương quan Pearson giữa tất cả features với biến mục tiêu `Precipitation`.
-2. **Feature Selection**: Loại bỏ features có |correlation| < 0.1 với biến mục tiêu.
-   - `Temperature` bị loại (correlation = 0.016).
-3. **Multicollinearity Check**: Kiểm tra đa cộng tuyến giữa các features được chọn (threshold = 0.95).
-   - `Relative Humidity` và `Specific Humidity` có tương quan cao (0.916) nhưng dưới ngưỡng 0.95.
-   - Giữ lại cả hai để đảm bảo mô hình hồi quy đa biến (Multiple Linear Regression).
+1. **Correlation Matrix**: Tính tương quan giữa các đặc trưng và `precipitation`.
+2. **Multicollinearity Check**: Lọc các cặp đặc trưng có tương quan cao ( threshold = 0.8) để tránh đa cộng tuyến.
+3. **Feature Selection**: Chọn các đặc trưng khí tượng tối ưu nhất cho mô hình Hồi quy Tuyến tính.
 
-## 3.5 Features cuối cùng được chọn
-
-| Feature | Correlation với Precipitation | Vai trò |
-|---|---|---|
-| **Relative Humidity** | 0.7652 | Biến độc lập |
-| **Specific Humidity** | 0.7431 | Biến độc lập |
-| **Precipitation** | — | Biến mục tiêu (target) |
-
-- `Temperature` bị loại do tương quan quá thấp (0.016).
-- `Year`, `Month`, `Day` không được sử dụng làm features dự đoán (chỉ dùng để sắp xếp thời gian).
-
-## 3.6 Hình ảnh EDA
+## 3.5 Hình ảnh EDA
 
 - `outputs/figures/correlation_heatmap.png` – Ma trận tương quan
 - `outputs/figures/histogram_features.png` – Biểu đồ phân phối
