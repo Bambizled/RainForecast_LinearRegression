@@ -46,8 +46,6 @@ RainForecast_LinearRegression/
 ├── data/
 │   ├── raw/ (weather-vn-1.csv ... weather-vn-5.csv)
 │   └── processed/ (X_train.csv, X_test.csv, y_train.csv, y_test.csv)
-├── docs/
-│   └── chapter3_summary.md
 ├── notebooks/
 │   └── EDA.ipynb
 ├── outputs/
