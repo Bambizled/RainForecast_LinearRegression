@@ -148,3 +148,11 @@ def main() -> None:
         raise
 if __name__ == "__main__":
     main()
+
+X, y = df.drop(columns=['Precipitation']), df['Precipitation']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+X_train.to_csv('data/raw/X_train.csv', index=False)
+X_test.to_csv('data/raw/X_test.csv', index=False)
+y_train.to_csv('data/raw/y_train.csv', index=False)
+y_test.to_csv('data/raw/y_test.csv', index=False)
