@@ -51,6 +51,22 @@ def main():
         MODELS_OUTPUT_DIR / "predictions_sklearn.csv", index=False
     )
 
+    print("\n" + "=" * 55)
+    print("           MODEL EVALUATION SUMMARY")
+    print("=" * 55)
+    print(f"{'Metric':<15} | {'Custom (Scratch)':<16} | {'Scikit-Learn':<16}")
+    print("-" * 55)
+    for metric in ["mae", "mse", "rmse", "r2", "adjusted_r2"]:
+        val_scratch = metrics_scratch.get(metric)
+        val_sklearn = metrics_sklearn.get(metric)
+        s_scratch = f"{val_scratch:.4f}" if val_scratch is not None else "N/A"
+        s_sklearn = f"{val_sklearn:.4f}" if val_sklearn is not None else "N/A"
+        print(f"{metric.upper():<15} | {s_scratch:<16} | {s_sklearn:<16}")
+    print("=" * 55 + "\n")
+
+    return metrics_scratch, metrics_sklearn
+
 
 if __name__ == "__main__":
     main()
+

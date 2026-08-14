@@ -23,5 +23,8 @@ data/raw/*.csv
 data/processed/*.csv
 !data/processed/.gitkeep
 
+outputs/models/*.csv
 outputs/models/*.pkl
 outputs/models/*.joblib
+!outputs/models/.gitkeep
+
